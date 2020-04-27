@@ -3,12 +3,15 @@
 ##-----------------------------------------------------------------------
 ## Porgram: dbab-svr pixelserv
 ## Purpose: super minimal webserver serving a 1x1 pixel transparent gif
-## Authors: Tong Sun (c) 2013-2019
+## Authors: Tong Sun (c) 2013-2020
 ## Authors: Originally wrote by Piet Wintjens, date unknown
 ## License: covered by the new BSD (no advertising clause) license
 ## Reference: Well House Consultants training course
 ##	    http://www.wellho.net/resources/ex.php4?item=p402/miniserver.pl
 ##-----------------------------------------------------------------------
+
+use strict;
+use warnings;
 
 use IO::Socket::INET;
 
@@ -49,7 +52,7 @@ my $autoProxy = "function FindProxyForURL(url, host) {".
             qq| return "PROXY $proxyaddr:3128; DIRECT"; }$crlf|;
 
 # Setup and create socket
-my $sock = new IO::Socket::INET(
+my $sock = IO::Socket::INET->new(
     LocalHost => $listento,
     LocalPort => '80',
     Proto     => 'tcp',
@@ -65,7 +68,7 @@ if ( !defined($sock) ) {
 # If the connection is open, but get closed before dbab-svr has
 # sent the pixel, the SIGPIPE gets send, and dbab-srv will die.
 # Ignore such signal as we can write to a closed connection anyway. 
-$SIG{'PIPE'} = 'IGNORE';
+local $SIG{'PIPE'} = 'IGNORE';
 
 # Await requests and handle them as they arrive
 while (1) {
@@ -75,29 +78,27 @@ while (1) {
     my %request = ();
     local $/ = $crlf;
     #-------- Read Request ---------------
-    while (<$new_sock>) {
-	chomp; # Main http request
-	if (/\s*(\w+)\s*([^\s]+)\s*HTTP\/(\d.\d)/) {
-	    $request{METHOD} = uc $1;
-	    $request{URL} = $2;
-	    $request{HTTP_VERSION} = $3;
-	    next;
-	}
-
-        # print ">$_<\n";
-        if ( /^$/ ) { last; }
+    while (my $req = <$new_sock>) {
+        chomp $req; # Main http request
+        if ( $req =~ /^$/ ) { last; }
+        if ( $req =~ /\s*(\w+)\s*([^\s]+)\s*HTTP\/(\d.\d)/ ) {
+            $request{METHOD} = uc $1;
+            $request{URL} = $2;
+            $request{HTTP_VERSION} = $3;
+            next;
+        }
     }
-
+    
     if (defined($request{METHOD}) and $request{METHOD} eq 'GET' and
     	    ($request{URL} eq '/proxy.pac' or
     	     $request{URL} eq '/wpad.dat') ) {
-	#------- Serve pac/wpad file --------------------
+        #------- Serve pac/wpad file --------------------
         print $new_sock "HTTP/1.0 200 OK$crlf";
         print $new_sock "Connection: close$crlf";
         print $new_sock "Content-Type: application/octet-stream$crlf$crlf";
-        print $new_sock "$autoProxy";
+        print $new_sock $autoProxy;
     } else {
-	#------- Serve pixel file ----------------------
+        #------- Serve pixel file ----------------------
         print $new_sock "HTTP/1.0 200 OK$crlf";
         print $new_sock "Connection: close$crlf";
         print $new_sock "Cache-Control: public, max-age=31536000$crlf";
