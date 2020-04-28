@@ -30,47 +30,9 @@ Now let's start. First, if you haven't done [switching from dynamic IP to static
 
 and check out [why to do that](http://sfxpt.wordpress.com/2011/02/21/the-best-ad-blocking-method/#Pixelserv_server_IP_address) as well if you want. 
 
-Here is a recap what I did to configure my machine with the `192.168.2.102` static IP and a second one of `192.168.2.101`:
+[Here is a recap](https://github.com/suntong/dbab/wiki/Dbab-From-Start-To-Finish#static-ip) of what I did to configure my machine with the `192.168.2.102` static IP and a second one of `192.168.2.101`, which might not apply to your distro any more. E.g., modern `Ubuntu` no longer use `/etc/network/interfaces` to config static IP, and I grew tired of tracking how it is done, throughout all its changes, which is convoluted to me at best. Please refer to other helps, if needed, as configuring the static and second IP is out of the scope of this document.
 
-```bash
-cat << EOF > /etc/network/interfaces
-# interfaces(5) file used by ifup(8) and ifdown(8)
-# Include files from /etc/network/interfaces.d:
-source-directory /etc/network/interfaces.d
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-# The primary network interface
-auto eth0
-allow-hotplug eth0
-
-# Use static IP instead of dhcp
-iface eth0 inet static
-        address 192.168.2.102
-        network 192.168.2.0
-        netmask 255.255.255.0
-        broadcast 192.168.2.255
-        gateway 192.168.2.1
-        # add a 2nd ip address
-        post-up ip addr add dev eth0 192.168.2.101/24
-        pre-down ip addr del dev eth0 192.168.2.101/24
-EOF
-
-/etc/init.d/network-manager restart
-/etc/init.d/networking restart
-
-% ip addr show dev eth0
-...
-    inet 192.168.2.102/24 brd 192.168.2.255 scope global eth0
-...
-    inet 192.168.2.101/24 scope global secondary eth0
-...
-
-```
-
-For details and troubleshooting, refer back to the above 
+For the principle of troubleshooting, refer back to the above 
 [switching from dynamic IP to static IP](http://sfxpt.wordpress.com/2014/05/11/use-dbab-under-ubuntu-14-04-trusty/) document. 
 
 <a name="plan"/>
@@ -82,7 +44,7 @@ Once we have our second IP address, the reset of the steps are:
 0. [Install & configure DNSmasq](http://sfxpt.wordpress.com/2013/11/30/dnsmasq-installation-configuration-5/).
 0. Remove all existing ad blocking tools if you have any.
 0. Stop your local web server temporarily if you have any.
-0. Before installation `dbab`, go and visit some websites which have ads on their pages such as "yahoo", "abcnews" or anything, then
+0. Before installation `dbab`, go and visit some websites which have ads on their pages such as "yahoo", "abcnews" etc or anything, leaving their pages open in different browser tabs, then
 0. Install & configure the `dbab` package.
 0. Restart your local web server if you have any.
 0. Now, visit those pages again in different tabs to see if the ads are removed :-).
@@ -101,9 +63,9 @@ Details to follow. But please be warned, as there are so many pieces tied togeth
 To install DNSmasq and Dbab
 
 ```
-% apt-get update 
-% apt-get install dnsmasq
-% apt-get install dbab
+% apt update 
+% apt install dnsmasq
+% apt install dbab
 ```
 
 <a name="configure-dnsmasq"/>
@@ -115,7 +77,7 @@ To configure DNSmasq:
 	cp /usr/share/doc/dbab/dbab-dnsmasq.service.conf /etc/dnsmasq.d
 	cp /usr/share/doc/dbab/dbab-dnsmasq.intranet.conf /etc/dnsmasq.d
 
-The `dbab-dnsmasq.service.conf` provides basic `dnsmasq` service configuration. It's content is pretty standard and consistent across all installations, so you don't need to make any changes to it. The `dbab-dnsmasq.intranet.conf` however, reflects how exactly your intranet is configured. What provided is just a boilerplate, of which every content should be customized. I.e., from the below listing, we can see that the ISP DNS server address, the dhcp lease range, the local-net domain name and the dhcp hosts should all be customized. Edit `/etc/dnsmasq.d/dbab-dnsmasq.intranet.conf` to reflect your true intranet  configuration.
+The `dbab-dnsmasq.service.conf` provides basic `dnsmasq` service configuration. It's content is pretty standard and consistent across all installations, so you don't need to make any changes to it. The `dbab-dnsmasq.intranet.conf` however, reflects how exactly your intranet is configured. What provided is just a boilerplate, of which every content should be customized. I.e., from the below listing, we can see that the ISP DNS server address, the dhcp lease range, the local-net domain name and the `dhcp` hosts should all be customized. Edit `/etc/dnsmasq.d/dbab-dnsmasq.intranet.conf` to reflect your true intranet  configuration.
 
 	# == DNS from ISP
 	server=192.168.2.1
@@ -308,14 +270,14 @@ It should show real IP instead of `127.0.0.1`.
 ## Switching Over to DNSmasq Service
 
 To make the above changed configuration take effect, `dnsmasq` must be
-restarted (because sending SIGHUP to the dnsmasq process will only cause it
-to empty its cache and then re-load /etc/hosts and /etc/resolv.conf):
+restarted (because sending `SIGHUP` to the dnsmasq process will only cause it
+to empty its cache and then re-load `/etc/hosts` and `/etc/resolv.conf`):
 
     /etc/init.d/dnsmasq restart
 
-But before doing that, we need to disable (DSL) router's dhcp and dns
+But before doing that, we need to disable (DSL) router's `dhcp` and `dns`
 services, because (DSL) router would normally act as both dhchp and dns server
-for the most cases. if I dedicate a dnsmasq server for both dhcp and dns
+for the most cases. if I dedicate a dnsmasq server for both `dhcp` and `dns`
 servers, I have to disable DHCP on my router so only my own dnsmasq server
 responds to DHCP requests. For DNS, the DHCP response can give the IP
 address of the DNS for the clients to use.

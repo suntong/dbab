@@ -91,8 +91,8 @@ the IP address of `dhcp` server, then enable the automatic WPAD service within t
 
 ## AUTHOR(S)
 
-Copyright: 2013~2020 Tong SUN, suntong001 from users.sourceforge.net
-License: BSD-3-Clause
+Copyright: 2013~2020 Tong SUN  
+![suntong001 from users.sourceforge.net](https://img.shields.io/badge/suntong001-%40users.sourceforge.net-lightgrey.svg "suntong001 from users.sourceforge.net")
 
 The pixelserv was originally downloaded from  
  http://proxytunnel.sourceforge.net/files/pixelserv.pl.txt  
