@@ -74,10 +74,10 @@ To install DNSmasq and Dbab
 
 To configure DNSmasq:
 
-	cp /usr/share/doc/dbab/dbab-dnsmasq.service.conf /etc/dnsmasq.d
-	cp /usr/share/doc/dbab/dbab-dnsmasq.intranet.conf /etc/dnsmasq.d
+	cp /usr/share/doc/dbab/dbab-dnsmasq.DNS.conf /etc/dnsmasq.d
+	cp /usr/share/doc/dbab/dbab-dnsmasq.DHCP.conf /etc/dnsmasq.d
 
-The `dbab-dnsmasq.service.conf` provides basic `dnsmasq` service configuration. It's content is pretty standard and consistent across all installations, so you don't need to make any changes to it. The `dbab-dnsmasq.intranet.conf` however, reflects how exactly your intranet is configured. What provided is just a boilerplate, of which every content should be customized. I.e., from the below listing, we can see that the ISP DNS server address, the dhcp lease range, the local-net domain name and the `dhcp` hosts should all be customized. Edit `/etc/dnsmasq.d/dbab-dnsmasq.intranet.conf` to reflect your true intranet  configuration.
+The `dbab-dnsmasq.DNS.conf` provides basic `dnsmasq` service configuration. It's content is pretty standard and consistent across all installations, so you don't need to make any changes to it. The `dbab-dnsmasq.DHCP.conf` however, reflects how exactly your intranet is configured. What provided is just a boilerplate, of which every content should be customized. I.e., from the below listing, we can see that the ISP DNS server address, the dhcp lease range, the local-net domain name and the `dhcp` hosts should all be customized. Edit `/etc/dnsmasq.d/dbab-dnsmasq.DHCP.conf` to reflect your true intranet  configuration.
 
 	# == DNS from ISP
 	server=192.168.2.1
