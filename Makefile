@@ -47,8 +47,6 @@ install:
 	$(INSTALL) -m 644 assets/dbab-get-list.8 $(mandir)/man8
 	$(INSTALL) -m 644 assets/dhcp-add-wpad.8 $(mandir)/man8
 	$(INSTALL) -m 644 dbab.md $(docdir)
-	$(INSTALL) -m 644 assets/dbab-dnsmasq.DNS.conf $(docdir)
-	$(INSTALL) -m 644 assets/dbab-dnsmasq.DHCP.conf $(docdir)
 
 	$(INSTALL) -m 644 assets/dbab.addr $(astdir)
 	$(INSTALL) -m 644 assets/dbab.list+ $(astdir)
