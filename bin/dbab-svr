@@ -18,7 +18,7 @@ use IO::Socket::INET;
 my $dbabId = "dbab/v1.5";
 
 my $conffile = "/etc/dbab/dbab.addr";
-my $proxyfile = "/etc/dbab/dbab.proxy";
+my $proxyfile = $conffile;
 
 my $crlf  = Socket::CRLF;
 my $pixel = pack( "C*",

@@ -2,13 +2,12 @@
 
 ##-----------------------------------------------------------------------
 ## Porgram: dhcp-add-wpad
-## Purpose: Add WPAD (Web Proxy Autodiscovery Protocol) to dbab/dhch service
-## Authors: Tong Sun (c) 2014-2019
+## Purpose: Add WPAD (Web Proxy Autodiscovery Protocol) to dbab service
+## Authors: Tong Sun (c) 2014-2020
 ## License: BSD license
 ##-----------------------------------------------------------------------
 
-dbabsvr=`cat /etc/dbab/dbab.proxy`
-dbabsvr_addr=`dig +short $dbabsvr`
+dbabsvr_addr=`cat /etc/dbab/dbab.addr`
 dbab_conf=/etc/dnsmasq.d/dbab-dnsmasq.wpad.conf
 
 # Add wpad DNS entry
