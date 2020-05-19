@@ -51,4 +51,3 @@ install:
 	$(INSTALL) -m 644 assets/dbab.addr $(astdir)
 	$(INSTALL) -m 644 assets/dbab.list+ $(astdir)
 	$(INSTALL) -m 644 assets/dbab.list- $(astdir)
-	$(INSTALL) -m 644 assets/dbab.proxy $(astdir)

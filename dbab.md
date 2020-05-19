@@ -181,10 +181,6 @@ cat /etc/dbab/dbab.addr
 
 # OPTIONAL! do the following only if you have squid caching server
 # and you want to enable automatic WPAD service
-hostname | tee /etc/dbab/dbab.proxy
-  # NB, if your squid caching server is on a different server, do this instead
-  echo my_squid_server_name | tee /etc/dbab/dbab.proxy
-# then, 
 /usr/sbin/dhcp-add-wpad
 # Again verify everything here before moving on because script might not be
 # 100% time correct. Manually tweaking is inevitable sometimes.
