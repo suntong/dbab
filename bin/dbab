@@ -2,7 +2,10 @@
 # kFreeBSD do not accept scripts as interpreters, using #!/bin/sh and sourcing.
 if [ true != "$INIT_D_SCRIPT_SOURCED" ] ; then
     set "$0" "$@";
-    # do not source /lib/init/init-d-script but my own version
+    # if there is a /lib/init/init-d-script, then source it
+    [ -s /lib/init/init-d-script ] &&
+        INIT_D_SCRIPT_SOURCED=true . /lib/init/init-d-script
+    # then source my private copy restlessly
     # see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=958899 for why
     INIT_D_SCRIPT_SOURCED=true . /lib/init/dbab-init-d-script
 fi
