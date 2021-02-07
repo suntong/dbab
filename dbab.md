@@ -111,7 +111,7 @@ Now test it:
 ```bash
 dig @192.168.2.1 google.ca
 
-/etc/init.d/dnsmasq restart
+sudo systemctl restart dnsmasq
 
 dig @192.168.2.102 google.ca
 
@@ -165,7 +165,7 @@ In details, do the following as root, again assuming that the server's own IP ad
 # (run the following as root)
 
 # stop dbab service
-/etc/init.d/dbab stop
+sudo systemctl stop dbab
 
 # use the second IP for dbab-svr to listens on
 ip -f inet addr show eth0 | awk '/inet /{print $2}' | sed 's|/.*$||; 1d' | sudo tee /etc/dbab/dbab.addr
@@ -186,10 +186,10 @@ cat /etc/dbab/dbab.addr
 # 100% time correct. Manually tweaking is inevitable sometimes.
 
 # restart DNS & DHCP
-/etc/init.d/dnsmasq restart
+sudo systemctl restart dnsmasq
 
 # re-start dbab service
-/etc/init.d/dbab start
+sudo systemctl start dbab
 
 # re-start your local web server again if you have any
 
@@ -228,7 +228,7 @@ Then, convert the list to be used by DNSmasq:
 
 Those bad sites are now blocked by DNSmasq, after restarting it:
 
-    /etc/init.d/dnsmasq restart
+    sudo systemctl restart dnsmasq
 
 That's it. Next time if you accidentally click into those sites,
 You will see a blank page, which loads instantly, with the
@@ -269,7 +269,7 @@ To make the above changed configuration take effect, `dnsmasq` must be
 restarted (because sending `SIGHUP` to the dnsmasq process will only cause it
 to empty its cache and then re-load `/etc/hosts` and `/etc/resolv.conf`):
 
-    /etc/init.d/dnsmasq restart
+    sudo systemctl restart dnsmasq
 
 But before doing that, we need to disable (DSL) router's `dhcp` and `dns`
 services, because (DSL) router would normally act as both dhchp and dns server

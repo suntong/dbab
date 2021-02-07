@@ -6,7 +6,6 @@ exec_prefix = ${prefix}
 mandir = ${prefix}/share/man
 docdir = ${prefix}/share/doc/dbab
 bindir = ${exec_prefix}/sbin
-libdir = ${DESTDIR}/lib
 etcdir = ${DESTDIR}/etc
 astdir = ${etcdir}/dbab
 ssddir = ${DESTDIR}/lib/systemd/system
@@ -26,9 +25,7 @@ install:
 	$(INSTALL) -m 755 -d $(bindir)
 	$(INSTALL) -m 755 -d $(mandir)/man8
 	$(INSTALL) -m 755 -d $(docdir)
-	$(INSTALL) -m 755 -d $(libdir)/init
 	$(INSTALL) -m 755 -d $(etcdir)
-	$(INSTALL) -m 755 -d $(etcdir)/init.d
 	$(INSTALL) -m 755 -d $(astdir)
 	$(INSTALL) -m 755 -d $(ssddir)
 
@@ -37,8 +34,6 @@ install:
 	$(INSTALL) -m 755 bin/dbab-chk-list $(bindir)
 	$(INSTALL) -m 755 bin/dhcp-add-wpad $(bindir)
 	$(INSTALL) -m 755 bin/dbab-svr $(bindir)
-	$(INSTALL) -m 755 bin/dbab-init-d-script $(libdir)/init
-	$(INSTALL) -m 755 bin/dbab $(etcdir)/init.d
 	$(INSTALL) -m 644 assets/dbab.service $(ssddir)
 
 	$(INSTALL) -m 644 assets/dbab-svr.8 $(mandir)/man8
