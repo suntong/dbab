@@ -3,7 +3,7 @@
 ##-----------------------------------------------------------------------
 ## Porgram: dbab-get-list
 ## Purpose: Get dnsmasq blocking list from pgl.yoyo.org
-## Authors: Tong Sun (c) 2013-2020
+## Authors: Tong Sun (c) 2013-2021
 ## License: BSD license
 ##-----------------------------------------------------------------------
 
@@ -18,7 +18,9 @@ dbab_conf=/etc/dnsmasq.d/dbab-map.adblock.conf
 
 # Down the DNSmasq formatted ad block list
 dbab_tmp=/tmp/`basename $dbab_conf`
-curl "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=dnsmasq&showintro=0&mimetype=plaintext" -o $dbab_tmp
+cmd="curl 'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=dnsmasq&showintro=0&mimetype=plaintext' -o $dbab_tmp"
+echo $cmd
+eval $cmd || eval $cmd --insecure
 [ $? -ne 0 ] && {
   echo "ERROR: invoking curl to retrieve the blocking list"
   exit 0 # so as not to break postinst
