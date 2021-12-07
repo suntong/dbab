@@ -1,5 +1,11 @@
 # dbab(8) -- dnsmasq based ad blocking
 
+## NOTICE
+
+- If you like `dbab`, check out its sister project [`dbab-packer`](https://github.com/suntong/dbab-packer/).
+- It has been my default way of using `dbab` for quite a while now, thus I'm officially recommending it over the host-package-installing approach.
+- I will update the Debian package for the last time and stop packaging it after 2021.
+
 ## SYNOPSIS
 
     # start dbab-svr server
