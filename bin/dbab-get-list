@@ -10,14 +10,15 @@
 grep -n '^[[:punct:]]*$' /etc/dbab/dbab.list- && {
   echo "ERROR: Blank line(s) found in /etc/dbab/dbab.list-"
   printf "\tRemove them before proceeding.\n"
-  exit 1
+  exit 0 # so as not to break postinst
 }
 
 dbabsvr_addr=`cat /etc/dbab/dbab.addr`
 dbab_conf=/etc/dnsmasq.d/dbab-map.adblock.conf
 
 # Down the DNSmasq formatted ad block list
-dbab_tmp=/tmp/`basename $dbab_conf`
+dbab_tmp=`basename $dbab_conf`
+dbab_tmp=`mktemp /tmp/$dbab_tmp.XXXXXX`
 cmd="curl 'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=dnsmasq&showintro=0&mimetype=plaintext' -o $dbab_tmp"
 echo $cmd
 eval $cmd || eval $cmd --insecure
