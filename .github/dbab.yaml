@@ -16,7 +16,7 @@ arch: amd64
 # Default is `semver`
 #   `semver` parse the version string as a valid semver version
 #   `none` skip trying to parse the version string and just use what is passed in
-version_schema: semver
+version_schema: none
 
 # Version. (required)
 # This will expand any env var you set in the field, eg version: v${SEMVER}
@@ -24,7 +24,7 @@ version: v1.2.3
 
 # Version Epoch.
 # Default is extracted from `version` if it is semver compatible.
-epoch: 2
+#epoch: 2
 
 # Version Prerelease.
 # Default is extracted from `version` if it is semver compatible.
@@ -33,11 +33,11 @@ epoch: 2
 # Version Metadata (previously deb.metadata).
 # Default is extracted from `version` if it is semver compatible.
 # Setting metadata might interfere with version comparisons depending on the packager.
-version_metadata: git
+#version_metadata: git
 
 # Version Release.
 # This will expand any env var you set in the field, eg release: ${VERSION_RELEASE}
-release: 1
+#release: 1
 
 # Section.
 section: default
@@ -45,7 +45,7 @@ section: default
 # Priority.
 # Defaults to `optional` on deb
 # Defaults to empty on rpm and apk
-priority: extra
+#priority: extra
 
 # Maintainer.
 # Defaults to empty on rpm and apk
@@ -54,11 +54,15 @@ maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
 
 # Description.
 # Defaults to `no description given`.
-description: Sample package
+description: |
+  this is not a normal string it
+  spans more than
+  one line
+  see?
 
 # Vendor.
 # This will expand any env var you set in the field, eg vendor: ${VENDOR}
-vendor: GoReleaser
+#vendor: GoReleaser
 
 # Package's homepage.
 homepage: https://nfpm.goreleaser.com
@@ -81,8 +85,9 @@ disable_globbing: false
 #  - bar
 
 # Dependencies. (overridable)
-#depends:
-#  - git
+depends:
+      - perl
+      - curl
 
 # Recommended packages. (overridable)
 recommends:
@@ -102,6 +107,8 @@ contents:
   # Basic file that applies to all packagers
   # - src: path/to/local/foo
   #   dst: /usr/local/bin/foo
+  - src: bin/
+    dst: /usr/sbin/
 
   # Simple config file
   # - src: path/to/local/foo.conf
@@ -195,21 +202,17 @@ overrides:
   # different package formats use different versions or for dependencies that are named differently.
   deb:
     depends:
-      # - baz (>= 1.2.3-0)
-      # - some-lib-dev
-    # ...
+      - perl:any
+      - curl
   rpm:
     depends:
-      # - baz >= 1.2.3-0
-      # - some-lib-devel
-    # ...
-  apk:
-    # ...
+      - perl
+      - curl
 
 # Custom configuration applied only to the RPM packager.
 rpm:
   # rpm specific architecture name that overrides "arch" without performing any replacements.
-  rpm_arch: ia64
+  #rpm_arch: ia64
 
   # RPM specific scripts.
   scripts:
@@ -217,12 +220,6 @@ rpm:
     # pretrans: ./scripts/pretrans.sh
     # The posttrans script runs after all RPM package transactions / stages.
     # posttrans: ./scripts/posttrans.sh
-
-  # The packager is used to identify the organization that actually packaged
-  # the software, as opposed to the author of the software.
-  # `maintainer` will be used as fallback if not specified.
-  # This will expand any env var you set in the field, eg packager: ${PACKAGER}
-  packager: GoReleaser <staff@goreleaser.com>
 
   # Compression algorithm (gzip (default), lzma or xz).
   compression: lzma
