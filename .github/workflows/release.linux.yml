@@ -1,0 +1,63 @@
+name: release (linux)
+
+on:
+  release:
+    types:
+      - created
+  # Allows you to run this workflow manually from the Actions tab
+  #workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        include:
+          # - arch: amd64
+          #   cc:   gcc
+          # - arch: arm64
+          #   cc:   aarch64-linux-gnu-gcc
+          - pkg: apk
+          - pkg: deb
+          - pkg: rpm
+
+    env:
+      PKG: ${{ matrix.pkg }}
+
+      # GOOS:   linux
+      # GOARCH: ${{ matrix.arch }}
+      # CC:     ${{ matrix.cc }}
+
+    steps:
+      - name: Install nfpm
+        working-directory: /
+        run: |
+          curl -sfL https://git.io/JDkED | sh
+          ls -l /bin/nfpm
+
+      - id: release
+        uses: bruceadams/get-release@v1.2.2
+        # env:
+        #   GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Set release
+        run: |
+          echo "RELEASE_VERSION=${{ steps.release.outputs.tag_name }}" >> $GITHUB_ENV
+          echo upload_url: ${{ steps.release.outputs.upload_url }}
+
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          echo "RELEASE_VERSION=${RELEASE_VERSION}"
+          env | grep RELEASE_VERSION=
+          nfpm pkg --config .github/dbab.yaml --packager ${{ env.PKG }} --target dist
+
+
+      - name: Upload release package
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./dist/dbab_${{ env.RELEASE_VERSION }}-1_all.${{ env.PKG }}
+          generate_release_notes: true
