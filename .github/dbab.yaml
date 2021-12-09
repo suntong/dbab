@@ -1,5 +1,5 @@
 # Name. (required)
-name: foo
+name: dbab
 
 # Architecture. (required)
 # This will expand any env var you set in the field, eg version: ${GOARCH}
@@ -20,7 +20,7 @@ version_schema: none
 
 # Version. (required)
 # This will expand any env var you set in the field, eg version: v${SEMVER}
-version: v1.2.3
+version: 1.5.8-1
 
 # Version Epoch.
 # Default is extracted from `version` if it is semver compatible.
@@ -40,7 +40,7 @@ version: v1.2.3
 #release: 1
 
 # Section.
-section: default
+section: net
 
 # Priority.
 # Defaults to `optional` on deb
@@ -50,22 +50,27 @@ section: default
 # Maintainer.
 # Defaults to empty on rpm and apk
 # Leaving the 'maintainer' field unset will not be allowed in a future version
-maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
+maintainer: Tong Sun <suntong001@users.sourceforge.net>
 
 # Description.
 # Defaults to `no description given`.
 description: |
-  this is not a normal string it
-  spans more than
-  one line
-  see?
+ dnsmasq-based ad-blocking using pixelserv
+ Block advertising sites at the DNS level. dbab is feather weight,
+ both in terms of package size and CPU usage, because no pattern matching or
+ string substitution is involved. Thus it is super efficient and extremely
+ fast.  All ads are be replaced by a 1x1 pixel gif image served locally by
+ the tiny pixelserv server. The ad-block list can be periodically downloaded
+ from pgl.yoyo.org, and can be tweaked locally. Speed up mobile device
+ browsing without installing any apps to them.
+
 
 # Vendor.
 # This will expand any env var you set in the field, eg vendor: ${VENDOR}
 #vendor: GoReleaser
 
 # Package's homepage.
-homepage: https://nfpm.goreleaser.com
+homepage: https://github.com/suntong/dbab
 
 # License.
 license: MIT
@@ -85,9 +90,8 @@ disable_globbing: false
 #  - bar
 
 # Dependencies. (overridable)
-depends:
-      - perl
-      - curl
+#depends:
+#  - git
 
 # Recommended packages. (overridable)
 recommends:
@@ -109,6 +113,17 @@ contents:
   #   dst: /usr/local/bin/foo
   - src: bin/
     dst: /usr/sbin/
+
+  - src: assets/dbab.[al]*
+    dst: /etc/dbab/
+
+  - src: assets/dbab.service
+    dst: /lib/systemd/system/dbab.service
+    # file_info:
+    #   mode: 0644
+
+  - src: assets/dbab*.conf
+    dst: /usr/share/doc/dbab/
 
   # Simple config file
   # - src: path/to/local/foo.conf
@@ -195,6 +210,7 @@ scripts:
   # postinstall: ./scripts/postinstall.sh
   # preremove: ./scripts/preremove.sh
   # postremove: ./scripts/postremove.sh
+  postinstall: .github/dbab.postinst
 
 # All fields above marked as `overridable` can be overriden for a given package format in this section.
 overrides:
@@ -203,10 +219,19 @@ overrides:
   deb:
     depends:
       - perl:any
+      - dnsmasq
+      - dnsutils
+      - ca-certificates
       - curl
   rpm:
     depends:
       - perl
+      - dnsmasq
+      - curl
+  apk:
+    depends:
+      - perl
+      - dnsmasq
       - curl
 
 # Custom configuration applied only to the RPM packager.
