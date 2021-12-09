@@ -6,7 +6,7 @@ name: dbab
 # The architecture is specified using Go nomenclature (GOARCH) and translated
 # to the platform specific equivalent. In order to manually set the architecture
 # to a platform specific value, use deb_arch, rpm_arch and apk_arch.
-arch: amd64
+arch: all
 
 # Platform.
 # Defaults to `linux`.
@@ -20,7 +20,7 @@ version_schema: none
 
 # Version. (required)
 # This will expand any env var you set in the field, eg version: v${SEMVER}
-version: 1.5.8-1
+version: ${RELEASE_VERSION}-1
 
 # Version Epoch.
 # Default is extracted from `version` if it is semver compatible.
@@ -124,6 +124,10 @@ contents:
 
   - src: assets/dbab*.conf
     dst: /usr/share/doc/dbab/
+
+  - src: LICENSE
+    dst: /usr/share/doc/dbab/copyright
+    # packager: deb
 
   # Simple config file
   # - src: path/to/local/foo.conf
@@ -236,8 +240,6 @@ overrides:
 
 # Custom configuration applied only to the RPM packager.
 rpm:
-  # rpm specific architecture name that overrides "arch" without performing any replacements.
-  #rpm_arch: ia64
 
   # RPM specific scripts.
   scripts:
@@ -264,8 +266,6 @@ rpm:
 
 # Custom configuration applied only to the Deb packager.
 deb:
-  # deb specific architecture name that overrides "arch" without performing any replacements.
-  # deb_arch: arm
 
   # Custom deb special files.
   scripts:
@@ -312,5 +312,3 @@ deb:
     # key_id: bc8acdd415bd80b3
 
 apk:
-  # apk specific architecture name that overrides "arch" without performing any replacements.
-  # apk_arch: armhf
