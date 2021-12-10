@@ -5,7 +5,7 @@ on:
     types:
       - created
   # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  #workflow_dispatch:
 
 jobs:
   build:
@@ -18,15 +18,11 @@ jobs:
           # - arch: arm64
           #   cc:   aarch64-linux-gnu-gcc
           - pkg: apk
-            push: alpine
           - pkg: deb
-            push: deb
           - pkg: rpm
-            push: rpm
 
     env:
       PKG: ${{ matrix.pkg }}
-      CSPUSH: ${{ matrix.push }}
 
       # GOOS:   linux
       # GOARCH: ${{ matrix.arch }}
@@ -71,7 +67,11 @@ jobs:
         run: |
           for filename in dist/*; do
             echo "Pushing '$filename' to cloudsmith repo"
-            cloudsmith push ${{ env.CSPUSH }} suntong/repo/any-distro/any-version $filename
+            if [ ${{ env.PKG }} = 'apk' ]; then
+              cloudsmith push alpine suntong/repo/alpine/any-version $filename
+            else
+              cloudsmith push ${{ env.PKG }} suntong/repo/any-distro/any-version $filename
+            fi
           done
 
       - name: Upload release package
