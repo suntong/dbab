@@ -1,11 +1,14 @@
 name: release (linux)
 
+env:
+  PkgName: dbab
+
 on:
   release:
     types:
       - created
   # Allows you to run this workflow manually from the Actions tab
-  #workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -29,8 +32,17 @@ jobs:
       # CC:     ${{ matrix.cc }}
 
     steps:
+      - name: Cache nfpm
+        uses: actions/cache@v2
+        id: cache_nfpm
+        # Do before install nfpm
+        with:
+          key: nfpm-bin
+          path: /bin/nfpm
+
       - name: Install nfpm
         working-directory: /
+        if: steps.cache_nfpm.outputs.cache-hit != 'true'
         run: |
           curl -sfL https://git.io/JDkED | sudo sh
           ls -l /bin/nfpm
@@ -42,13 +54,18 @@ jobs:
 
       - id: release
         uses: bruceadams/get-release@v1.2.2
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Set release
         run: |
-          echo "RELEASE_VERSION=${{ steps.release.outputs.tag_name }}" >> $GITHUB_ENV
-          echo msg: ${{ steps.release.outputs.name }}
+          if [ "x${{ steps.release.outputs.tag_name }}" = 'x' ]; then
+            echo "RELEASE_VERSION=1.5.8" >> $GITHUB_ENV
+          else
+            echo "RELEASE_VERSION=${{ steps.release.outputs.tag_name }}" >> $GITHUB_ENV
+            echo msg: ${{ steps.release.outputs.name }}
+          fi
 
       - uses: actions/checkout@v2
 
@@ -58,7 +75,8 @@ jobs:
           mkdir -p dist
           echo "RELEASE_VERSION=${RELEASE_VERSION}"
           env | grep RELEASE_VERSION=
-          nfpm pkg --config .github/dbab.yaml --packager ${{ env.PKG }} --target dist
+          nfpm pkg --config .github/${{ env.PkgName }}.yaml --packager ${{ env.PKG }} --target dist
+          ls -l dist
 
       # Publish to cloudsmith to repo
       - name: Publish package to cloudsmith
@@ -78,5 +96,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.release.outputs.name }}
-          files: ./dist/dbab*
+          files: ./dist/${{ env.PkgName }}*
           generate_release_notes: true
