@@ -14,8 +14,7 @@ use strict;
 use warnings;
 
 use IO::Select;
-use IO::Socket::INET;
-use IO::Socket::INET6;
+use IO::Socket::IP;
 
 my $dbabId = "dbab/v1.5";
 
@@ -53,22 +52,24 @@ for my $i (0..$#listento) {
     if ( $addr =~ /^[\d\.]+/ ) { # IPv4 address
         $autoProxy = "function FindProxyForURL(url, host) {".
                 qq| return "PROXY $addr:3128; DIRECT"; }$crlf|;
-        $sock = IO::Socket::INET->new(
-            LocalHost => $addr,
-            LocalPort => '80',
-            Proto     => 'tcp',
-            Listen    => 30,
-            Reuse     => 1
+        $sock = IO::Socket::IP->new(
+            Domain       => PF_INET,
+            LocalAddr    => $addr,
+            LocalService => 'http',
+            Proto        => 'tcp',
+            Listen       => 30,
+            Reuse        => 1
         );
     } elsif ( $addr =~ /^[\da-fA-F\:]+/ ) { # IPv6 address
         $autoProxy = "function FindProxyForURL(url, host) {".
                 qq| return "PROXY [$addr]:3128; DIRECT"; }$crlf|;
-        $sock = IO::Socket::INET6->new(
-            LocalHost => $addr,
-            LocalPort => '80',
-            Proto     => 'tcp',
-            Listen    => 30,
-            Reuse     => 1
+        $sock = IO::Socket::IP->new(
+            Domain       => PF_INET6,
+            LocalAddr    => $addr,
+            LocalService => 'http',
+            Proto        => 'tcp',
+            Listen       => 30,
+            Reuse        => 1
         );
     }
 
