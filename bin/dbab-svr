@@ -16,7 +16,7 @@ use warnings;
 use IO::Select;
 use IO::Socket::IP;
 
-my $dbabId = "dbab/v1.5";
+my $dbabId = "dbab/v1.6";
 
 my $conffile = "/etc/dbab/dbab.addr";
 

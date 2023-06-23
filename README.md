@@ -95,9 +95,12 @@ NB: Since dnsmasq will only serve one IPv4 and IPv6 address for a host-record, o
 
 ## AUTHOR(S)
 
-Copyright: 2013~2020 Tong SUN  
+Copyright: 2013~2023 Tong SUN  
 ![suntong001 from users.sourceforge.net](https://img.shields.io/badge/suntong001-%40users.sourceforge.net-lightgrey.svg "suntong001 from users.sourceforge.net")
 
-The pixelserv was originally downloaded from  
+The credits go to 
+
+- the original pixelserv, downloaded from  
  http://proxytunnel.sourceforge.net/files/pixelserv.pl.txt  
 Wrote by Piet Wintjens, with BSD (no advertising clause) license.
+- and [Tim Spriggs](https://github.com/imoverclocked) who single-handily almost rewrote the pixel server code while bringing the IPv6 support to it.
