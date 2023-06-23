@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -47,11 +47,6 @@ jobs:
           curl -sfL https://git.io/JDkED | sudo sh
           ls -l /bin/nfpm
 
-      - name: Install Cloudsmith CLI
-        run: pip install --upgrade cloudsmith-cli
-        # Cloudsmith CLI tooling for pushing releases
-        # See https://help.cloudsmith.io/docs/cli
-
       - id: release
         uses: bruceadams/get-release@v1.2.2
         continue-on-error: true
@@ -78,6 +73,18 @@ jobs:
           nfpm pkg --config .github/${{ env.PkgName }}.yaml --packager ${{ env.PKG }} --target dist
           ls -l dist
 
+      - name: Upload release package
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ steps.release.outputs.name }}
+          files: ./dist/${{ env.PkgName }}*
+          generate_release_notes: true
+
+      - name: Install Cloudsmith CLI
+        run: pip install --upgrade cloudsmith-cli
+        # Cloudsmith CLI tooling for pushing releases
+        # See https://help.cloudsmith.io/docs/cli
+
       # Publish to cloudsmith to repo
       - name: Publish package to cloudsmith
         env:
@@ -91,10 +98,3 @@ jobs:
               cloudsmith push ${{ env.PKG }} suntong/repo/any-distro/any-version $filename
             fi
           done
-
-      - name: Upload release package
-        uses: softprops/action-gh-release@v1
-        with:
-          body: ${{ steps.release.outputs.name }}
-          files: ./dist/${{ env.PkgName }}*
-          generate_release_notes: true
