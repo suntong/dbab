@@ -1,1 +1,3 @@
+# This supports multiple addresses but only one of each address family (IPv4/IPv6) may be resolved
 127.0.0.1
+::1

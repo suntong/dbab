@@ -7,10 +7,13 @@
 ## License: BSD license
 ##-----------------------------------------------------------------------
 
-dbabsvr_addr=`cat /etc/dbab/dbab.addr`
+# Perl: remove all comment lines ; replace whitespace (critically: newlines) with a comma
+dbabsvr_addr=`perl -pe 's/^\#.*[\r\n]+$//;s/\s+/,/g' < /etc/dbab/dbab.addr`
 dbab_conf=/etc/dnsmasq.d/dbab-dnsmasq.wpad.conf
 
 # Add wpad DNS entry
+# NB: dnsmasq format constraint: --host-record=<name>[,<name>....],[<IPv4-address>],[<IPv6-address>][,<TTL>]
+# The above format accepts multiple IPv4/IPv6 addresses but will throw out all but the last of each address type
 echo "host-record=wpad,$dbabsvr_addr" > $dbab_conf
 # Add wpad location to dhcp server
 echo 'dhcp-option=252,"http://wpad/wpad.dat"' >> $dbab_conf

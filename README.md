@@ -68,13 +68,15 @@ The `dbab-chk-list` can help you to check if your own list is already covered by
 
 ## DHCP-ADD-WPAD
 
-The `dhcp-add-wpad` will take the content in `/etc/dbab/dbab.addr` as the IP of the host of the  `dhcp` server, the squid caching server, then enable the automatic WPAD service within the system, with the help of the `DNS` and `DHCP` server.
+The `dhcp-add-wpad` will take the content in `/etc/dbab/dbab.addr` as the IPs (one per line) of the host of the  `dhcp` server, the squid caching server, then enable the automatic WPAD service within the system, with the help of the `DNS` and `DHCP` server.
+
+NB: Since dnsmasq will only serve one IPv4 and IPv6 address for a host-record, only the last entry of each type will be resolved.
 
 ## FILES 
 
 * `/etc/dbab/dbab.addr`  
-  The IP address that `dbab-svr` listens on. Defaults to `localhost`.
-  
+  The IP addresses that `dbab-svr` listens on. Defaults to `127.0.0.1` and `::1`.
+
 * `/etc/dbab/dbab.list-`  
   The entries you want to filter out from the pgl.yoyo.org lists. List sites you still wish to visit there. 
 
@@ -93,9 +95,12 @@ The `dhcp-add-wpad` will take the content in `/etc/dbab/dbab.addr` as the IP of 
 
 ## AUTHOR(S)
 
-Copyright: 2013~2020 Tong SUN  
+Copyright: 2013~2023 Tong SUN  
 ![suntong001 from users.sourceforge.net](https://img.shields.io/badge/suntong001-%40users.sourceforge.net-lightgrey.svg "suntong001 from users.sourceforge.net")
 
-The pixelserv was originally downloaded from  
+The credits go to 
+
+- the original pixelserv, downloaded from  
  http://proxytunnel.sourceforge.net/files/pixelserv.pl.txt  
 Wrote by Piet Wintjens, with BSD (no advertising clause) license.
+- and [Tim Spriggs](https://github.com/imoverclocked) who single-handily almost rewrote the pixel server code while bringing the IPv6 support to it.

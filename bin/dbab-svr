@@ -13,12 +13,12 @@
 use strict;
 use warnings;
 
-use IO::Socket::INET;
+use IO::Select;
+use IO::Socket::IP;
 
-my $dbabId = "dbab/v1.5";
+my $dbabId = "dbab/v1.6";
 
 my $conffile = "/etc/dbab/dbab.addr";
-my $proxyfile = $conffile;
 
 my $crlf  = Socket::CRLF;
 my $pixel = pack( "C*",
@@ -29,90 +29,110 @@ my $fh;
 
 #-------- conf file ---------------
 open($fh, "<", $conffile) || die "can't open $conffile: $!";
-my $listento = do { local $/; <$fh> };
+my @listento;
+while (<$fh>) { push(@listento, $_) unless /^#/ };
 close($fh) || die "can't close $conffile: $!";
 
-if ( $listento =~ /^([\d.]+)$/ ) {
-    $listento = $1;                # $listento now untainted
-}
-else {
-    die "Bad listen to address: '$listento'";
+for my $i (0..$#listento) {
+    if ( $listento[$i] =~ /^([\d.]+)$/ || $listento[$i] =~ /^([\da-fA-F:]+)$/ ) {
+        $listento[$i] = $1;                # $listento now untainted
+    }
+    else {
+        die "Bad listen to address: '$listento[$i]'";
+    }
 }
 
-#-------- proxy file ---------------
-open($fh, "<", $proxyfile) || die "can't open $proxyfile: $!";
-my $proxyaddr = do { local $/; <$fh> };
-close($fh) || die "can't close $proxyfile: $!";
+# Setup and create sockets
+my $socks = IO::Select->new();
+my %sockAutoProxy;
+for my $i (0..$#listento) {
+    my $autoProxy;
+    my $sock;
+    my $addr = $listento[$i];
+    if ( $addr =~ /^[\d\.]+/ ) { # IPv4 address
+        $autoProxy = "function FindProxyForURL(url, host) {".
+                qq| return "PROXY $addr:3128; DIRECT"; }$crlf|;
+        $sock = IO::Socket::IP->new(
+            Domain       => PF_INET,
+            LocalAddr    => $addr,
+            LocalService => 'http',
+            Proto        => 'tcp',
+            Listen       => 30,
+            Reuse        => 1
+        );
+    } elsif ( $addr =~ /^[\da-fA-F\:]+/ ) { # IPv6 address
+        $autoProxy = "function FindProxyForURL(url, host) {".
+                qq| return "PROXY [$addr]:3128; DIRECT"; }$crlf|;
+        $sock = IO::Socket::IP->new(
+            Domain       => PF_INET6,
+            LocalAddr    => $addr,
+            LocalService => 'http',
+            Proto        => 'tcp',
+            Listen       => 30,
+            Reuse        => 1
+        );
+    }
 
-if ( $proxyaddr =~ /^([\w.]+)$/ ) {
-    $proxyaddr = $1;                # $proxyaddr now untainted
-}
-else {
-    die "Error opening proxy definition file: '$proxyaddr'";
-}
-my $autoProxy = "function FindProxyForURL(url, host) {".
-            qq| return "PROXY $proxyaddr:3128; DIRECT"; }$crlf|;
-
-# Setup and create socket
-my $sock = IO::Socket::INET->new(
-    LocalHost => $listento,
-    LocalPort => '80',
-    Proto     => 'tcp',
-    Listen    => 30,
-    Reuse     => 1
-);
-
-if ( !defined($sock) ) {
-    print "error : cannot bind : $! exit\n";
-    exit(1);
+    if ( !defined($sock) ) {
+        print "error : cannot bind : $! exit\n";
+        exit(1);
+    }
+    $socks->add($sock);
+    $sockAutoProxy{$sock} = $autoProxy;
 }
 
 # If the connection is open, but get closed before dbab-svr has
 # sent the pixel, the SIGPIPE gets send, and dbab-srv will die.
-# Ignore such signal as we can write to a closed connection anyway. 
+# Ignore such signal as we can write to a closed connection anyway.
 local $SIG{'PIPE'} = 'IGNORE';
 
 # Await requests and handle them as they arrive
-while (1) {
-    my  $new_sock = $sock->accept() or next;
-    # set timeout of 2s to avoid blocking the whole program
-    $new_sock->setsockopt(SOL_SOCKET, SO_RCVTIMEO, pack('l!l!', 2, 0));
-    my %request = ();
-    local $/ = $crlf;
-    #-------- Read Request ---------------
-    while (my $req = <$new_sock>) {
-        chomp $req; # Main http request
-        if ( $req =~ /^$/ ) { last; }
-        if ( $req =~ /\s*(\w+)\s*([^\s]+)\s*HTTP\/(\d.\d)/ ) {
-            $request{METHOD} = uc $1;
-            $request{URL} = $2;
-            $request{HTTP_VERSION} = $3;
-            next;
+while (my @ready = $socks->can_read()) {
+    foreach my $sock (@ready) {
+        my $new_sock = $sock->accept() or next;
+        my $autoProxy = $sockAutoProxy{$sock} or die("unknown socket");
+        # set timeout of 2s to avoid blocking the whole program
+        $new_sock->setsockopt(SOL_SOCKET, SO_RCVTIMEO, pack('l!l!', 2, 0));
+        my %request = ();
+        local $/ = $crlf;
+        #-------- Read Request ---------------
+        while (my $req = <$new_sock>) {
+            chomp $req; # Main http request
+            if ( $req =~ /^$/ ) { last; }
+            if ( $req =~ /\s*(\w+)\s*([^\s]+)\s*HTTP\/(\d.\d)/ ) {
+                $request{METHOD} = uc $1;
+                $request{URL} = $2;
+                $request{HTTP_VERSION} = $3;
+                next;
+            }
         }
-    }
-    
-    if (defined($request{METHOD}) and $request{METHOD} eq 'GET' and
-    	    ($request{URL} eq '/proxy.pac' or
-    	     $request{URL} eq '/wpad.dat') ) {
-        #------- Serve pac/wpad file --------------------
-        print $new_sock "HTTP/1.0 200 OK$crlf";
-        print $new_sock "Connection: close$crlf";
-        print $new_sock "Content-Type: application/octet-stream$crlf$crlf";
-        print $new_sock $autoProxy;
-    } else {
-        #------- Serve pixel file ----------------------
-        print $new_sock "HTTP/1.0 200 OK$crlf";
-        print $new_sock "Server: $dbabId$crlf";
-        print $new_sock "Connection: close$crlf";
-        print $new_sock "Cache-Control: public, max-age=31536000$crlf";
-        print $new_sock "Content-type: image/gif$crlf";
-        print $new_sock "Content-length: 43$crlf$crlf";
-        print $new_sock $pixel;
-    }
 
-    shutdown( $new_sock, 2 );
-    undef($new_sock);
+        if (defined($request{METHOD}) and $request{METHOD} eq 'GET' and
+                   ($request{URL} eq '/proxy.pac' or
+                    $request{URL} eq '/wpad.dat') ) {
+            #------- Serve pac/wpad file --------------------
+            print $new_sock "HTTP/1.0 200 OK$crlf" .
+                "Connection: close$crlf" .
+                "Content-Type: application/octet-stream$crlf$crlf" .
+                $autoProxy;
+        } else {
+            #------- Serve pixel file ----------------------
+            print $new_sock "HTTP/1.0 200 OK$crlf" .
+                "Server: $dbabId$crlf" .
+                "Connection: close$crlf" .
+                "Cache-Control: public, max-age=31536000$crlf" .
+                "Content-type: image/gif$crlf" .
+                "Content-length: 43$crlf$crlf" .
+                $pixel;
+        }
+
+        shutdown( $new_sock, 2 );
+        undef($new_sock);
+    }
 }
 
-close($sock);
+for my $handle ($socks->handles()) {
+    $socks->remove($handle);
+    close($handle);
+}
 exit(0);
