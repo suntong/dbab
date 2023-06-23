@@ -48,7 +48,7 @@ jobs:
           ls -l /bin/nfpm
 
       - id: release
-        uses: bruceadams/get-release@v1.2.2
+        uses: bruceadams/get-release@v1.3.2
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
