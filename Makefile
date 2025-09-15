@@ -8,7 +8,7 @@ docdir = ${prefix}/share/doc/dbab
 bindir = ${exec_prefix}/sbin
 etcdir = ${DESTDIR}/etc
 astdir = ${etcdir}/dbab
-ssddir = ${DESTDIR}/lib/systemd/system
+ssddir = ${prefix}/lib/systemd/system
 
 # Install the systemd unit file if systemd support was detected.
 ifdef HAVE_SYSTEMD

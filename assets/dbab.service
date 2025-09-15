@@ -10,5 +10,10 @@ Documentation=https://github.com/suntong/dbab/blob/master/dbab.md
 ExecStart=/usr/sbin/dbab-svr
 Type=simple
 
+# Hardening Directives
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+
 [Install]
 WantedBy=multi-user.target
